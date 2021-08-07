@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Add as AddIcon } from '@material-ui/icons';
-import StudentTabs from '../components/StudentTabs';
+import StudentTabs from '../features/tabs/StudentTabs';
 import PracticalTabChild from '../features/tabs/PracticalTabChild';
 import FloatingActionButton from '../components/FloatingActionButton';
 import { Link } from 'react-router-dom';
@@ -15,11 +15,17 @@ import {
 	clearError as clearPracticalsError,
 	fetchAllPracticals,
 } from '../features/practicals/practicalSlice';
+import { authState } from '../features/auth/authSlice';
 import { toast } from 'react-toastify';
+import Modal from '../components/Modal';
+import Pdf from '../components/Pdf';
+import { modalState } from '../features/modal/modalSlice';
 
 function Practicals() {
 	const { error } = useAppSelector(unitState);
 	const { error: PracticalsError } = useAppSelector(practicalState);
+	const { user } = useAppSelector(authState);
+	const { file } = useAppSelector(modalState);
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
@@ -49,9 +55,12 @@ function Practicals() {
 	return (
 		<div>
 			<StudentTabs render={() => <PracticalTabChild />} />
-			<Link to="/add-practical">
-				<FloatingActionButton icon={<AddIcon />} />
-			</Link>
+			{user.role === 'labtech' && (
+				<Link to="/add-practical">
+					<FloatingActionButton icon={<AddIcon />} />
+				</Link>
+			)}
+			<Modal render={() => <Pdf file={file} />} />
 		</div>
 	);
 }

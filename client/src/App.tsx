@@ -19,6 +19,8 @@ import AddPractical from './components/forms/practicals/AddPractical';
 import Login from './Pages/Login';
 import Profile from './Pages/Profile';
 import NotFound from './Pages/NotFound';
+import Marks from './Pages/Marks';
+import Reports from './Pages/Reports';
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -58,6 +60,8 @@ function App() {
 					<ProtectedRoute path="/add-group" component={AddGroup} />
 					<ProtectedRoute path="/add-practical" component={AddPractical} />
 					<ProtectedRoute path="/profile" component={Profile} />
+					<ProtectedRoute path="/marks" component={Marks} />
+					<ProtectedRoute path="/reports" component={Reports} />
 					<Route path="/login" component={Login} />
 					<Route component={NotFound} />
 				</Switch>

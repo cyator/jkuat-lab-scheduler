@@ -4,7 +4,7 @@ import { Error } from '../auth/authSlice';
 import authHeader from '../auth/authHeader';
 
 export interface EquipmentState {
-	equipments: [Equipment];
+	equipments: Equipment[];
 	isLoading: boolean;
 	error: Error;
 }
@@ -12,6 +12,8 @@ export interface EquipmentState {
 export interface Equipment {
 	equipment_id: number | null;
 	equipment_name: string;
+	total: number;
+	bad_condition: number;
 }
 
 const initialState: EquipmentState = {
@@ -19,6 +21,8 @@ const initialState: EquipmentState = {
 		{
 			equipment_id: null,
 			equipment_name: '',
+			total: 0,
+			bad_condition: 0,
 		},
 	],
 	isLoading: false,
@@ -73,6 +77,8 @@ export const equipmentsSlice = createSlice({
 					{
 						equipment_id: null,
 						equipment_name: '',
+						total: 0,
+						bad_condition: 0,
 					},
 				];
 				state.error = {

@@ -41,9 +41,9 @@ export default function EquipmentRow({ row }: Props) {
 				<TableCell component="th" scope="row">
 					{row.equipment_name}
 				</TableCell>
-				<TableCell align="right">100</TableCell>
-				<TableCell align="right">80</TableCell>
-				<TableCell align="right">55</TableCell>
+				<TableCell align="right">{row.total}</TableCell>
+				<TableCell align="right">{row.total - row.bad_condition}</TableCell>
+				<TableCell align="right">{row.bad_condition}</TableCell>
 			</TableRow>
 			<TableRow>
 				<TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>

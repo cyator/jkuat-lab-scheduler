@@ -10,6 +10,7 @@ import equipmentReducer from '../features/equipment/equipmentSlice';
 import profileReducer from '../features/profile/profileSlice';
 import practicalsReducer from '../features/practicals/practicalSlice';
 import componentsReducer from '../features/equipment/componentsSlice';
+import reportsReducer from '../features/reports/reportsSlice';
 
 export const store = configureStore({
 	reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
 		profile: profileReducer,
 		practicals: practicalsReducer,
 		components: componentsReducer,
+		reports: reportsReducer,
 	},
 });
 

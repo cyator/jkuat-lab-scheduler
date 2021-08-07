@@ -22,11 +22,17 @@ export default function PracticalsList({ unit }: Props) {
 	return (
 		<Grid container className={classes.root} spacing={2}>
 			{practicals.map(
-				({ prac_id, prac_name, abstract, unit_code }) =>
+				({ prac_id, prac_name, abstract, unit_code, lab_manual }) =>
 					unit_code === unit && (
-						<Grid key={prac_id} item xs={3}>
-							<PracticalCard title={prac_name} abstract={abstract} />
-						</Grid>
+						<>
+							<Grid key={prac_id} item xs={3}>
+								<PracticalCard
+									title={prac_name}
+									abstract={abstract}
+									lab_manual={lab_manual}
+								/>
+							</Grid>
+						</>
 					)
 			)}
 		</Grid>

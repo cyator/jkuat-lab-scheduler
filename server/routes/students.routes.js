@@ -3,6 +3,7 @@ const router = express.Router();
 const { verifyToken } = require('../config/jwt');
 const {
 	getALLStudents,
+	getStudentsByYear,
 	getstudentByID,
 	addstudent,
 	editstudent,
@@ -11,6 +12,8 @@ const {
 
 //staff
 router.get('/', verifyToken('staff'), getALLStudents);
+//classrep
+router.get('/:reg_no', verifyToken('classrep'), getStudentsByYear);
 //staff
 router.get('/:reg_no', verifyToken('staff'), getstudentByID);
 //cod

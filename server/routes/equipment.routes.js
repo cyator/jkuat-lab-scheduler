@@ -3,6 +3,7 @@ const router = express.Router();
 const { verifyToken } = require('../config/jwt');
 const {
 	getALLEquipment,
+	getComponent,
 	getEquipmentByID,
 	addEquipment,
 	editEquipment,
@@ -10,37 +11,9 @@ const {
 } = require('../controller/equipment.controller');
 
 //labtech
-router.get('/', verifyToken('labtech'), getALLEquipment('equipment'));
-
-//labtech
-router.get('/resistors', verifyToken('labtech'), getALLEquipment('resistors'));
-
-//labtech
-router.get(
-	'/capacitors',
-	verifyToken('labtech'),
-	getALLEquipment('capacitors')
-);
-
-//labtech
-router.get('/inductors', verifyToken('labtech'), getALLEquipment('inductors'));
-
-//labtech
-router.get(
-	'/signal_generators',
-	verifyToken('labtech'),
-	getALLEquipment('signal_generator')
-);
-
-//labtech
-router.get(
-	'/oscilloscope',
-	verifyToken('labtech'),
-	getALLEquipment('oscilloscope')
-);
-
-//labtech
 router.get('/', verifyToken('labtech'), getALLEquipment);
+//labtech
+router.get('/:table', verifyToken('labtech'), getComponent);
 //labtech
 router.get('/:equipment_id', verifyToken('labtech'), getEquipmentByID);
 //labtech

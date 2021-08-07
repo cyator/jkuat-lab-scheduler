@@ -25,11 +25,15 @@ module.exports = {
 			if (studentTest) {
 				//check email
 				const student = await pool.query(
-					'SELECT * FROM students WHERE email=$1',
+					'SELECT * FROM students WHERE email = $1',
 					[email]
 				);
 				const classrep = await pool.query(
-					'SELECT * FROM classrep WHERE email=$1',
+					'SELECT * FROM class_rep WHERE email = $1',
+					[email]
+				);
+				const group_leader = await pool.query(
+					'SELECT * FROM group_leader_view WHERE email = $1',
 					[email]
 				);
 				if (student.rows.length === 0) {
@@ -50,6 +54,12 @@ module.exports = {
 					accessToken = await signAccessToken(
 						student.rows[0].reg_no,
 						'classrep',
+						student.rows[0].first_name
+					);
+				} else if (group_leader.rows.length > 0) {
+					accessToken = await signAccessToken(
+						student.rows[0].reg_no,
+						'groupLeader',
 						student.rows[0].first_name
 					);
 				} else {

@@ -5,11 +5,9 @@ import { useAppSelector } from '../../app/hooks';
 import { tabValue } from './tabsSlice';
 import TabPanel from '../../components/TabPanel';
 import { unitState } from '../units/unitsSlice';
-import { levels } from '../../components/StudentTabs';
+import { levels } from './StudentTabs';
 import Accordion from '../../components/Accordion';
 import PracticalsList from '../practicals/PracticalsList';
-import Modal from '../../components/Modal';
-import Pdf from '../../components/Pdf';
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -42,7 +40,6 @@ function PracticalTabChild() {
 					</div>
 				</TabPanel>
 			))}
-			<Modal render={() => <Pdf />} />
 		</>
 	);
 }

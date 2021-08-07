@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import StudentTabs from '../components/StudentTabs';
+import StudentTabs from '../features/tabs/StudentTabs';
 import StudentsTabChild from '../features/tabs/StudentsTabChild';
 import {
 	fetchAllGroups,
@@ -13,11 +13,24 @@ import {
 	clearError as clearStudentError,
 	studentState,
 } from '../features/students/studentsSlice';
+import FloatingActionButton from '../components/FloatingActionButton';
+import { Add as AddIcon } from '@material-ui/icons';
+import { Link } from 'react-router-dom';
+import { authState } from '../features/auth/authSlice';
+import {
+	fetchUser,
+	profileState,
+	clearError as clearProfileError,
+	StudentProfile,
+} from '../features/profile/profileSlice';
 
 function Students() {
 	const { error } = useAppSelector(groupState);
 	const { error: studentError } = useAppSelector(studentState);
+	const { user } = useAppSelector(authState);
+	const { profile, error: profileError } = useAppSelector(profileState);
 	const dispatch = useAppDispatch();
+	const { year_of_study } = profile as StudentProfile;
 
 	useEffect(() => {
 		dispatch(fetchAllGroups());
@@ -43,9 +56,30 @@ function Students() {
 		}
 	}, [dispatch, studentError]);
 
+	useEffect(() => {
+		const { id, role } = user;
+		role === 'classrep' && dispatch(fetchUser(id));
+	}, [dispatch, user]);
+
+	useEffect(() => {
+		if (profileError.status) {
+			console.log(profileError);
+			toast.error(profileError.message);
+			dispatch(clearProfileError());
+		}
+	}, [profileError, dispatch]);
+
 	return (
 		<div>
-			<StudentTabs render={() => <StudentsTabChild />} />
+			<StudentTabs
+				lock={year_of_study ? year_of_study : undefined}
+				render={() => <StudentsTabChild />}
+			/>
+			{user.role === 'classrep' && (
+				<Link to="/add-group">
+					<FloatingActionButton icon={<AddIcon />} />
+				</Link>
+			)}
 		</div>
 	);
 }

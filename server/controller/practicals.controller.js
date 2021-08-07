@@ -14,6 +14,29 @@ module.exports = {
 			next(error);
 		}
 	},
+	getPracticalsByYear: async (req, res, next) => {
+		try {
+			const { reg_no } = req.params;
+			const students = await pool.query(
+				'SELECT year_of_study FROM student_view WHERE reg_no = $1',
+				[reg_no]
+			);
+			if (students.rows.length === 0) {
+				throw createError(404, 'student not found');
+			}
+			const { rows } = await pool.query(
+				'SELECT * FROM practical INNER JOIN units USING (unit_code) WHERE unit_year = $1',
+				[students.rows[0].year_of_study]
+			);
+			if (rows.length === 0) {
+				throw createError(404, 'practicals not found');
+			}
+			res.json(rows);
+		} catch (error) {
+			console.log(error.message);
+			next(error);
+		}
+	},
 	getPracticalByID: async (req, res, next) => {
 		try {
 			const { id } = req.params;
@@ -32,7 +55,7 @@ module.exports = {
 	},
 	addPractical: async (req, res, next) => {
 		try {
-			const { unit_code, prac_name, abstract } = req.body;
+			const { unit_code, labtech_id, prac_name, abstract } = req.body;
 			if (!unit_code || !prac_name || !abstract || !labtech_id) {
 				throw createError.BadRequest();
 			}
@@ -40,6 +63,13 @@ module.exports = {
 				throw createError.BadRequest('No file selected');
 			}
 			const filename = req.file.filename;
+			const units = await pool.query(
+				`SELECT * FROM units WHERE unit_code = $1`,
+				[unit_code]
+			);
+			if (units.rows.length === 0) {
+				throw createError.BadRequest('please use a valid unit code');
+			}
 			const { rows } = await pool.query(
 				`INSERT INTO practical (unit_code,labtech_id,prac_name,abstract,lab_manual) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
 				[unit_code, labtech_id, prac_name, abstract, filename]

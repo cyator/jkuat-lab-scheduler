@@ -5,29 +5,34 @@ import authHeader from '../auth/authHeader';
 import { toast } from 'react-toastify';
 
 export interface PracticalState {
-	practicals: Practical[];
+	markedReports: Report[];
+	pendingReports: Report[];
 	status: 'loading' | 'failed' | 'success' | 'idle';
 	error: Error;
 }
 
-export interface Practical {
-	prac_id: number | null;
+interface Report {
 	unit_code: string;
-	labtech_id: string;
+	lec_id: string;
 	prac_name: string;
-	abstract: string;
-	lab_manual: string;
+	report: string;
 }
 
 const initialState: PracticalState = {
-	practicals: [
+	markedReports: [
 		{
-			prac_id: null,
 			unit_code: '',
-			labtech_id: '',
+			lec_id: '',
 			prac_name: '',
-			abstract: '',
-			lab_manual: '',
+			report: '',
+		},
+	],
+	pendingReports: [
+		{
+			unit_code: '',
+			lec_id: '',
+			prac_name: '',
+			report: '',
 		},
 	],
 	status: 'idle',
@@ -37,17 +42,17 @@ const initialState: PracticalState = {
 	},
 };
 
-export const fetchAllPracticals = createAsyncThunk(
-	'practicals/fetchAllPracticals',
+export const fetchMarkedReports = createAsyncThunk(
+	'reports/fetchMarkedReports',
 	async (value, thunkAPI) => {
 		try {
-			const response = await fetch('/practicals', {
+			const response = await fetch('/reports/marked', {
 				headers: {
 					'Content-Type': 'application/json',
 					...authHeader(),
 				},
 			});
-			const data = (await response.json()) as Practical[];
+			const data = (await response.json()) as Report[];
 			if (response.status === 200) {
 				return data;
 			} else {
@@ -60,20 +65,64 @@ export const fetchAllPracticals = createAsyncThunk(
 	}
 );
 
-export const fetchPracticalsByYear = createAsyncThunk(
-	'practicals/fetchPracticalsByYear',
-	async (value, { getState, rejectWithValue }) => {
+export const fetchPendingReports = createAsyncThunk(
+	'reports/fetchPendingReports',
+	async (value, thunkAPI) => {
 		try {
-			const { auth } = getState() as RootState;
-			const response = await fetch(`/practicals/${auth.user.id}`, {
+			const response = await fetch('/reports/pending', {
 				headers: {
 					'Content-Type': 'application/json',
 					...authHeader(),
 				},
 			});
-			const data = (await response.json()) as Practical[];
+			const data = (await response.json()) as Report[];
 			if (response.status === 200) {
 				return data;
+			} else {
+				return thunkAPI.rejectWithValue(data);
+			}
+		} catch (error) {
+			console.log(error.response.data);
+			thunkAPI.rejectWithValue(error.response.data);
+		}
+	}
+);
+
+export const addReport = createAsyncThunk(
+	'reports/addReport',
+	async (
+		{
+			unit_code,
+			prac_name,
+			report,
+		}: {
+			unit_code: string;
+			prac_name: string;
+			report: FileList;
+		},
+		{ getState, rejectWithValue }
+	) => {
+		try {
+			const { auth } = getState() as RootState;
+			const formData = new FormData();
+			formData.append('file', report[0]);
+			formData.append('unit_code', unit_code);
+			formData.append('prac_name', prac_name);
+			formData.append('reg_no', auth.user.id);
+			console.log(formData);
+
+			const response = await fetch('/reports', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					...authHeader(),
+				},
+			});
+			const data = await response.json();
+			if (response.status === 200) {
+				toast.success('report added successfully');
+				console.log('add prac res', data[0]);
+				return data[0];
 			} else {
 				return rejectWithValue(data);
 			}
@@ -84,57 +133,8 @@ export const fetchPracticalsByYear = createAsyncThunk(
 	}
 );
 
-export const addPractical = createAsyncThunk(
-	'practicals/addPractical',
-	async (
-		{
-			labtech_id,
-			unit_code,
-			prac_name,
-			abstract,
-			lab_manual,
-		}: {
-			labtech_id: string;
-			unit_code: string;
-			prac_name: string;
-			abstract: string;
-			lab_manual: FileList;
-		},
-		thunkAPI
-	) => {
-		try {
-			const formData = new FormData();
-			formData.append('file', lab_manual[0]);
-			formData.append('unit_code', unit_code);
-			formData.append('labtech_id', labtech_id);
-			formData.append('prac_name', prac_name);
-			formData.append('abstract', abstract);
-			console.log(formData);
-
-			const response = await fetch('/practicals', {
-				method: 'POST',
-				body: formData,
-				headers: {
-					...authHeader(),
-				},
-			});
-			const data = await response.json();
-			if (response.status === 200) {
-				toast.success('practical added successfully');
-				console.log('add prac res', data[0]);
-				return data[0];
-			} else {
-				return thunkAPI.rejectWithValue(data);
-			}
-		} catch (error) {
-			console.log(error.response.data);
-			thunkAPI.rejectWithValue(error.response.data);
-		}
-	}
-);
-
-export const practicalSlice = createSlice({
-	name: 'practicals',
+export const reportsSlice = createSlice({
+	name: 'reports',
 	initialState,
 	reducers: {
 		clearError: (state) => {
@@ -149,19 +149,17 @@ export const practicalSlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		builder
-			.addCase(fetchAllPracticals.pending, (state) => {
+			.addCase(fetchMarkedReports.pending, (state) => {
 				state.status = 'loading';
 			})
-			.addCase(fetchAllPracticals.fulfilled, (state, action) => {
+			.addCase(fetchMarkedReports.fulfilled, (state, action) => {
 				state.status = 'success';
-				state.practicals = action.payload ?? [
+				state.markedReports = action.payload ?? [
 					{
-						prac_id: null,
 						unit_code: '',
-						labtech_id: '',
+						lec_id: '',
 						prac_name: '',
-						abstract: '',
-						lab_manual: '',
+						report: '',
 					},
 				];
 				state.error = {
@@ -169,23 +167,21 @@ export const practicalSlice = createSlice({
 					message: '',
 				};
 			})
-			.addCase(fetchAllPracticals.rejected, (state, action: any) => {
+			.addCase(fetchMarkedReports.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload;
 			})
-			.addCase(fetchPracticalsByYear.pending, (state) => {
+			.addCase(fetchPendingReports.pending, (state) => {
 				state.status = 'loading';
 			})
-			.addCase(fetchPracticalsByYear.fulfilled, (state, action) => {
+			.addCase(fetchPendingReports.fulfilled, (state, action) => {
 				state.status = 'success';
-				state.practicals = action.payload ?? [
+				state.pendingReports = action.payload ?? [
 					{
-						prac_id: null,
 						unit_code: '',
-						labtech_id: '',
+						lec_id: '',
 						prac_name: '',
-						abstract: '',
-						lab_manual: '',
+						report: '',
 					},
 				];
 				state.error = {
@@ -193,28 +189,28 @@ export const practicalSlice = createSlice({
 					message: '',
 				};
 			})
-			.addCase(fetchPracticalsByYear.rejected, (state, action: any) => {
+			.addCase(fetchPendingReports.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload;
 			})
-			.addCase(addPractical.pending, (state) => {
+			.addCase(addReport.pending, (state) => {
 				state.status = 'loading';
 			})
-			.addCase(addPractical.fulfilled, (state) => {
+			.addCase(addReport.fulfilled, (state) => {
 				state.status = 'success';
 				state.error = {
 					status: null,
 					message: '',
 				};
 			})
-			.addCase(addPractical.rejected, (state, action: any) => {
+			.addCase(addReport.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload;
 			});
 	},
 });
 
-export const { clearError, setStatusIdle } = practicalSlice.actions;
-export const practicalState = (state: RootState) => state.practicals;
+export const { clearError, setStatusIdle } = reportsSlice.actions;
+export const practicalState = (state: RootState) => state.reports;
 
-export default practicalSlice.reducer;
+export default reportsSlice.reducer;

@@ -193,8 +193,17 @@ module.exports = {
 					return;
 				case 'student':
 					const isStudent = payload.role === 'student';
-					console.log(isStudent);
-					if (!isClassrep) {
+					if (!isStudent) {
+						throw createError.Unauthorized(
+							'you do not have permission to access this resource'
+						);
+					}
+					req.payload = payload;
+					next();
+					return;
+				case 'groupLeader':
+					const isgroupLeader = payload.role === 'groupLeader';
+					if (!isgroupLeader) {
 						throw createError.Unauthorized(
 							'you do not have permission to access this resource'
 						);
@@ -215,7 +224,9 @@ module.exports = {
 					return;
 				case 'staff':
 					const isStaff =
-						payload.role === 'lecturer' || payload.role === 'labtech';
+						payload.role === 'lecturer' ||
+						payload.role === 'labtech' ||
+						payload.role === 'cod';
 					console.log(isStaff);
 					if (!isStaff) {
 						throw createError.Unauthorized(
@@ -227,7 +238,6 @@ module.exports = {
 					return;
 				case 'lecturer':
 					const isLecturer = payload.role === 'lecturer';
-					console.log(isLecturer);
 					if (!isLecturer) {
 						throw createError.Unauthorized(
 							'you do not have permission to access this resource'
@@ -238,7 +248,6 @@ module.exports = {
 					return;
 				case 'labtech':
 					const isLabtech = payload.role === 'labtech';
-					console.log(isLabtech);
 					if (!isLabtech) {
 						throw createError.Unauthorized(
 							'you do not have permission to access this resource'
@@ -249,7 +258,6 @@ module.exports = {
 					return;
 				case 'cod':
 					const isChair = payload.role === 'cod';
-					console.log(isChair);
 					if (!isChair) {
 						throw createError.Unauthorized(
 							'you do not have permission to access this resource'

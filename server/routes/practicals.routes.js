@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
 	getALLPracticals,
+	getPracticalsByYear,
 	getPracticalByID,
 	addPractical,
 	editPractical,
@@ -12,7 +13,9 @@ const {
 
 const upload = require('../middleware/multer');
 //labtech
-router.get('/', verifyToken('labtech'), getALLPracticals);
+router.get('/', verifyToken('all'), getALLPracticals);
+//groupLeader
+router.get('/:reg_no', verifyToken('groupLeader'), getPracticalsByYear);
 //labtech
 router.get('/:prac_id', verifyToken('labtech'), getPracticalByID);
 //labtech

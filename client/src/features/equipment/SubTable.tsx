@@ -95,7 +95,8 @@ interface Props {
 export default function EnhancedTable({ equipment }: Props) {
 	const classes = useStyles();
 	const [order, setOrder] = React.useState<Order>('asc');
-	const [orderBy, setOrderBy] = React.useState<keyof Component>('condition');
+	const [orderBy, setOrderBy] =
+		React.useState<keyof Component>('good_condition');
 	const [selected, setSelected] = React.useState<string[]>([]);
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -128,19 +129,19 @@ export default function EnhancedTable({ equipment }: Props) {
 			id: 'name',
 			numeric: false,
 			disablePadding: true,
-			label: 'Value (ohm)',
+			label: 'Value',
 		},
 		{
-			id: 'condition',
-			numeric: false,
+			id: 'good_condition',
+			numeric: true,
 			disablePadding: false,
-			label: 'Condition',
+			label: 'Good Condition',
 		},
 		{
-			id: 'date_of_purchase',
-			numeric: false,
+			id: 'bad_condition',
+			numeric: true,
 			disablePadding: false,
-			label: 'Date of Purchase',
+			label: 'Bad Condition',
 		},
 		{ id: 'quantity', numeric: true, disablePadding: false, label: 'Quantity' },
 	];
@@ -254,8 +255,8 @@ export default function EnhancedTable({ equipment }: Props) {
 											>
 												{row.name}
 											</TableCell>
-											<TableCell align="left">{row.date_of_purchase}</TableCell>
-											<TableCell align="left">{row.condition}</TableCell>
+											<TableCell align="right">{row.good_condition}</TableCell>
+											<TableCell align="right">{row.bad_condition}</TableCell>
 											<TableCell align="right">{row.quantity}</TableCell>
 										</TableRow>
 									);

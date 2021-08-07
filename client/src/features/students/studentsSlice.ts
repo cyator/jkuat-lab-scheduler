@@ -4,7 +4,7 @@ import { Error } from '../auth/authSlice';
 import authHeader from '../auth/authHeader';
 
 export interface StudentState {
-	students: [Student];
+	students: Student[];
 	isLoading: boolean;
 	error: Error;
 }
@@ -36,23 +36,35 @@ const initialState: StudentState = {
 
 export const fetchAllStudents = createAsyncThunk(
 	'students/fetchAllStudents',
-	async (value, thunkAPI) => {
+	async (value, { getState, rejectWithValue }) => {
 		try {
-			const response = await fetch('/students', {
-				headers: {
-					'Content-Type': 'application/json',
-					...authHeader(),
-				},
-			});
-			const data = (await response.json()) as [Student];
+			const { auth } = getState() as RootState;
+			let response;
+			if (auth.user.role === 'classrep') {
+				response = await fetch(`/students/${auth.user.id}`, {
+					headers: {
+						'Content-Type': 'application/json',
+						...authHeader(),
+					},
+				});
+			} else {
+				response = await fetch('/students', {
+					headers: {
+						'Content-Type': 'application/json',
+						...authHeader(),
+					},
+				});
+			}
+
+			const data = (await response.json()) as Student[];
 			if (response.status === 200) {
 				return data;
 			} else {
-				return thunkAPI.rejectWithValue(data);
+				return rejectWithValue(data);
 			}
 		} catch (error) {
 			console.log(error.response.data);
-			thunkAPI.rejectWithValue(error.response.data);
+			rejectWithValue(error.response.data);
 		}
 	}
 );

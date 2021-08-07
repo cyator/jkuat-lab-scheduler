@@ -3,10 +3,12 @@ import { RootState } from '../../app/store';
 
 export interface ModalState {
 	isOpen: boolean;
+	file: string;
 }
 
 const initialState: ModalState = {
 	isOpen: false,
+	file: '',
 };
 
 export const modalSlice = createSlice({
@@ -16,10 +18,13 @@ export const modalSlice = createSlice({
 		setIsOpen: (state, action: PayloadAction<boolean>) => {
 			state.isOpen = action.payload;
 		},
+		setFile: (state, action: PayloadAction<string>) => {
+			state.file = action.payload;
+		},
 	},
 });
 
-export const { setIsOpen } = modalSlice.actions;
+export const { setIsOpen, setFile } = modalSlice.actions;
 
 export const modalState = (state: RootState) => state.modal;
 

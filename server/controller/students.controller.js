@@ -16,6 +16,22 @@ module.exports = {
 			next(error);
 		}
 	},
+	getStudentsByYear: async (req, res, next) => {
+		try {
+			const { reg_no } = req.params;
+			const { rows } = await pool.query(
+				'SELECT * FROM student_view WHERE year_of_study = (SELECT year_of_study FROM student_view WHERE reg_no = $1)',
+				[reg_no]
+			);
+			if (rows.length === 0) {
+				throw createError(404, 'no students found');
+			}
+			res.json(rows);
+		} catch (error) {
+			console.log(error.message);
+			next(error);
+		}
+	},
 	getstudentByID: async (req, res, next) => {
 		try {
 			const { reg_no } = req.params;

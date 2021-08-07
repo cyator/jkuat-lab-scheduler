@@ -4,7 +4,7 @@ import { Error } from '../auth/authSlice';
 import authHeader from '../auth/authHeader';
 
 export interface UnitState {
-	units: [Unit];
+	units: Unit[];
 	isLoading: boolean;
 	error: Error;
 }
@@ -42,7 +42,7 @@ export const fetchAllUnits = createAsyncThunk(
 					...authHeader(),
 				},
 			});
-			const data = (await response.json()) as [Unit];
+			const data = (await response.json()) as Unit[];
 			if (response.status === 200) {
 				return data;
 			} else {
@@ -51,6 +51,30 @@ export const fetchAllUnits = createAsyncThunk(
 		} catch (error) {
 			console.log(error.response.data);
 			thunkAPI.rejectWithValue(error.response.data);
+		}
+	}
+);
+
+export const fetchUnitsByYear = createAsyncThunk(
+	'units/fetchUnitsByYear',
+	async (value, { getState, rejectWithValue }) => {
+		try {
+			const { auth } = getState() as RootState;
+			const response = await fetch(`/units/${auth.user.id}`, {
+				headers: {
+					'Content-Type': 'application/json',
+					...authHeader(),
+				},
+			});
+			const data = (await response.json()) as Unit[];
+			if (response.status === 200) {
+				return data;
+			} else {
+				return rejectWithValue(data);
+			}
+		} catch (error) {
+			console.log(error.response.data);
+			rejectWithValue(error.response.data);
 		}
 	}
 );
@@ -87,6 +111,28 @@ export const unitsSlice = createSlice({
 				};
 			})
 			.addCase(fetchAllUnits.rejected, (state, action: any) => {
+				state.isLoading = true;
+				state.error = action?.payload;
+			})
+			.addCase(fetchUnitsByYear.pending, (state) => {
+				state.isLoading = true;
+			})
+			.addCase(fetchUnitsByYear.fulfilled, (state, action) => {
+				state.isLoading = true;
+				state.units = action.payload ?? [
+					{
+						unit_code: '',
+						unit_name: '',
+						lec_id: '',
+						unit_year: null,
+					},
+				];
+				state.error = {
+					status: null,
+					message: '',
+				};
+			})
+			.addCase(fetchUnitsByYear.rejected, (state, action: any) => {
 				state.isLoading = true;
 				state.error = action?.payload;
 			});

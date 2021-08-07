@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
 	getALLUnits,
+	getUnitByYear,
 	getUnitByID,
 	addUnit,
 	editUnit,
@@ -11,6 +12,8 @@ const {
 } = require('../controller/units.controller');
 // jkuat members
 router.get('/', verifyToken('all'), getALLUnits);
+// groupLeader
+router.get('/:reg_no', verifyToken('groupLeader'), getUnitByYear);
 // jkuat members
 router.get('/:unit_code', verifyToken('all'), getUnitByID);
 // cod

@@ -31,6 +31,7 @@ app.use('/labtechs', require('./routes/labtechs.routes'));
 app.use('/lecturers', require('./routes/lecturers.routes'));
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/equipment', require('./routes/equipment.routes'));
+app.use('/reports', require('./routes/reports.routes'));
 
 app.use(express.static('./uploads'));
 

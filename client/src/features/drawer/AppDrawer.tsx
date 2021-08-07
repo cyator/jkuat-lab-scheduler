@@ -24,6 +24,7 @@ import PracticalsIcon from '@material-ui/icons/BuildOutlined';
 
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { close, drawerState } from './drawerSlice';
+import { authState } from '../auth/authSlice';
 
 import NavBar from './NavBar';
 
@@ -80,26 +81,105 @@ export default function AppDrawer() {
 	const theme = useTheme();
 	const dispatch = useAppDispatch();
 	const { isOpen } = useAppSelector(drawerState);
+	const { user } = useAppSelector(authState);
 	const history = useHistory();
 
-	const itemList = [
-		{ text: 'Home', icon: <HomeIcon />, onClick: () => history.push('/') },
-		{
-			text: 'Equipment',
-			icon: <EquipmentIcon />,
-			onClick: () => history.push('/equipment'),
-		},
-		{
-			text: 'Practicals',
-			icon: <PracticalsIcon />,
-			onClick: () => history.push('/practicals'),
-		},
-		{
-			text: 'Students',
-			icon: <StudentsIcon />,
-			onClick: () => history.push('/students'),
-		},
-	];
+	const itemList =
+		user.role === 'lecturer'
+			? [
+					{
+						text: 'Home',
+						icon: <HomeIcon />,
+						onClick: () => history.push('/'),
+					},
+					{
+						text: 'Marks',
+						icon: <EquipmentIcon />,
+						onClick: () => history.push('/marks'),
+					},
+					{
+						text: 'Practicals',
+						icon: <PracticalsIcon />,
+						onClick: () => history.push('/practicals'),
+					},
+					{
+						text: 'Students',
+						icon: <StudentsIcon />,
+						onClick: () => history.push('/students'),
+					},
+			  ]
+			: user.role === 'groupLeader'
+			? [
+					{
+						text: 'Home',
+						icon: <HomeIcon />,
+						onClick: () => history.push('/'),
+					},
+					{
+						text: 'Reports',
+						icon: <EquipmentIcon />,
+						onClick: () => history.push('/reports'),
+					},
+					{
+						text: 'Practicals',
+						icon: <PracticalsIcon />,
+						onClick: () => history.push('/practicals'),
+					},
+			  ]
+			: user.role === 'classrep'
+			? [
+					{
+						text: 'Home',
+						icon: <HomeIcon />,
+						onClick: () => history.push('/'),
+					},
+					{
+						text: 'Practicals',
+						icon: <PracticalsIcon />,
+						onClick: () => history.push('/practicals'),
+					},
+					{
+						text: 'Students',
+						icon: <StudentsIcon />,
+						onClick: () => history.push('/students'),
+					},
+			  ]
+			: user.role === 'student'
+			? [
+					{
+						text: 'Home',
+						icon: <HomeIcon />,
+						onClick: () => history.push('/'),
+					},
+
+					{
+						text: 'Practicals',
+						icon: <PracticalsIcon />,
+						onClick: () => history.push('/practicals'),
+					},
+			  ]
+			: [
+					{
+						text: 'Home',
+						icon: <HomeIcon />,
+						onClick: () => history.push('/'),
+					},
+					{
+						text: 'Equipment',
+						icon: <EquipmentIcon />,
+						onClick: () => history.push('/equipment'),
+					},
+					{
+						text: 'Practicals',
+						icon: <PracticalsIcon />,
+						onClick: () => history.push('/practicals'),
+					},
+					{
+						text: 'Students',
+						icon: <StudentsIcon />,
+						onClick: () => history.push('/students'),
+					},
+			  ];
 
 	const userItemList = [
 		{

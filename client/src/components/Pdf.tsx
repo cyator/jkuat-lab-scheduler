@@ -26,7 +26,11 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
-function Pdf() {
+interface Props {
+	file: string;
+}
+
+function Pdf({ file }: Props) {
 	const classes = useStyles();
 	const [numPages, setNumPages] = useState<number | null>(null);
 	const [pageNumber, setPageNumber] = useState<number>(1);
@@ -51,9 +55,7 @@ function Pdf() {
 	return (
 		<>
 			<Document
-				file={
-					'/uploads/stream/1627158932250-Kiswili, Michael  Mutua PhD (BA), 04062021.pdf'
-				}
+				file={`/uploads/stream/${file}`}
 				onLoadSuccess={onDocumentLoadSuccess}
 				onLoadError={(error) => console.log(error.message)}
 				onSourceError={(error) => console.log(error.message)}

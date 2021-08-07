@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Avatar, Button, Typography, Container } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import PracticalsIcon from '@material-ui/icons/BuildOutlined';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import FileInput from './FileInput';
 import Input from './Input';
 import MultilineInput from './MultilineInput';
-import { addPractical } from '../../../features/practicals/practicalSlice';
+import {
+	addPractical,
+	practicalState,
+	clearError,
+	setStatusIdle,
+} from '../../../features/practicals/practicalSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { authState } from '../../../features/auth/authSlice';
+import { toast } from 'react-toastify';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -40,11 +46,15 @@ export type FormData = {
 };
 
 const schema = yup.object().shape({
-	unitCode: yup.string().trim().required().uppercase(),
-	// .matches(/^TIE[0-9]{3}&/, 'please use a valid unit code'),
-	pracName: yup.string().trim().min(2).max(50).required(),
+	unit_code: yup
+		.string()
+		.trim()
+		.required()
+		.uppercase()
+		.matches(/^TIE[0-9]{3}$/, 'please use a valid unit code'),
+	prac_name: yup.string().trim().min(2).max(50).required(),
 	abstract: yup.string().trim().min(2).max(500).required(),
-	labManual: yup
+	lab_manual: yup
 		.mixed()
 		.required()
 		.test(
@@ -63,12 +73,21 @@ export default function AddPractical() {
 	const classes = useStyles();
 	const dispatch = useAppDispatch();
 	const { user } = useAppSelector(authState);
+	const { error } = useAppSelector(practicalState);
 	const { control, handleSubmit } = useForm<FormData>({
 		resolver: yupResolver(schema),
 	});
-	const onSubmit = handleSubmit((data) => {
+	const onSubmit: SubmitHandler<FormData> = (data, e) =>
 		dispatch(addPractical({ labtech_id: user.id, ...data }));
-	});
+	const onError = (errors: any, e: any) => console.log(errors, e);
+
+	useEffect(() => {
+		if (error.status) {
+			console.log(error);
+			toast.error(error.message);
+			dispatch(clearError());
+		}
+	}, [error, dispatch]);
 
 	return (
 		<Container maxWidth="xs">
@@ -79,7 +98,11 @@ export default function AddPractical() {
 				<Typography component="h1" variant="h5">
 					Add Practical
 				</Typography>
-				<form onSubmit={onSubmit} className={classes.form} noValidate>
+				<form
+					onSubmit={handleSubmit(onSubmit, onError)}
+					className={classes.form}
+					noValidate
+				>
 					<Input name="unit_code" control={control} />
 					<Input name="prac_name" control={control} />
 					<MultilineInput name="abstract" control={control} />

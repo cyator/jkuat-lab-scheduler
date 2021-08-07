@@ -4,8 +4,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import { useAppSelector, useAppDispatch } from '../app/hooks';
-import { tabValue, setValue } from '../features/tabs/tabsSlice';
+import { useAppSelector, useAppDispatch } from '../../app/hooks';
+import { tabValue, setValue } from './tabsSlice';
 
 function a11yProps(index: any) {
 	return {
@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface Props {
 	render: () => ReactNode;
+	lock?: number;
 }
 
 export const levels: string[] = [
@@ -34,7 +35,7 @@ export const levels: string[] = [
 	'Fifth Year',
 ];
 
-export default function StudentTabs({ render }: Props) {
+export default function StudentTabs({ render, lock }: Props) {
 	const classes = useStyles();
 	const dispatch = useAppDispatch();
 	const value = useAppSelector(tabValue);
@@ -55,7 +56,12 @@ export default function StudentTabs({ render }: Props) {
 					aria-label="tabs"
 				>
 					{levels.map((level, index) => (
-						<Tab key={index} label={level} {...a11yProps(index)} />
+						<Tab
+							disabled={!lock ? false : lock === index + 1 ? false : true}
+							key={index}
+							label={level}
+							{...a11yProps(index)}
+						/>
 					))}
 				</Tabs>
 			</AppBar>

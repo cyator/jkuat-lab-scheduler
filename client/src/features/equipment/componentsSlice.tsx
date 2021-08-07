@@ -12,8 +12,8 @@ export interface ComponentsState {
 export interface Component {
 	id: number;
 	name: string;
-	condition: string;
-	date_of_purchase: string;
+	good_condition: number;
+	bad_condition: number;
 	quantity: number;
 }
 
@@ -22,8 +22,8 @@ const initialState: ComponentsState = {
 		{
 			id: 0,
 			name: '',
-			condition: '',
-			date_of_purchase: '',
+			good_condition: 0,
+			bad_condition: 0,
 			quantity: 0,
 		},
 	],
@@ -79,8 +79,8 @@ export const componentsSlice = createSlice({
 					{
 						id: 0,
 						name: '',
-						condition: '',
-						date_of_purchase: '',
+						good_condition: 0,
+						bad_condition: 0,
 						quantity: 0,
 					},
 				];

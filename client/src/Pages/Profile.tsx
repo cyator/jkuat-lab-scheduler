@@ -88,7 +88,9 @@ function Profile() {
 						margin="normal"
 						fullWidth
 						label={
-							user.role === 'student' || user.role === 'classrep'
+							user.role === 'student' ||
+							user.role === 'classrep' ||
+							user.role === 'groupLeader'
 								? 'Registration Number'
 								: 'Staff Number'
 						}

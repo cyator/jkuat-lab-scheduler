@@ -4,12 +4,26 @@ import authHeader from '../auth/authHeader';
 import { Error } from '../auth/authSlice';
 
 export interface ProfileState {
-	profile: Profile;
+	profile: StudentProfile | LecturerProfile | LabtechProfile;
 	isLoading: boolean;
 	error: Error;
 }
 
-export interface Profile {
+export interface StudentProfile {
+	id: string;
+	first_name: string;
+	last_name: string;
+	group_id: number | null;
+	year_of_study: number | null;
+}
+
+export interface LecturerProfile {
+	id: string;
+	first_name: string;
+	last_name: string;
+}
+
+export interface LabtechProfile {
 	id: string;
 	first_name: string;
 	last_name: string;
@@ -38,7 +52,10 @@ export const fetchUser = createAsyncThunk(
 					...authHeader(),
 				},
 			});
-			const data = (await response.json()) as Profile;
+			const data = (await response.json()) as
+				| StudentProfile
+				| LabtechProfile
+				| LecturerProfile;
 			if (response.status === 200) {
 				return data;
 			} else {

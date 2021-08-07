@@ -46,7 +46,7 @@ export default function CollapsibleTable({ equipment }: Props) {
 					</TableRow>
 				</TableHead>
 				<TableBody>
-					{equipment.map((row) => (
+					{equipment.map((row, index) => (
 						<EquipmentRow key={row.equipment_id} row={row} />
 					))}
 				</TableBody>

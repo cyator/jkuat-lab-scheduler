@@ -8,6 +8,7 @@ import { levels } from './StudentTabs';
 import TabPanel from '../../components/TabPanel';
 import StudentTable from '../../components/StudentTable';
 import Accordion from '../../components/Accordion';
+import MarksTable from '../../components/MarksTable';
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -17,31 +18,18 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
-function StudentTabChild() {
-	const classes = useStyles();
+function MarksTabChild() {
 	const value = useAppSelector(tabValue);
-	const { groups } = useAppSelector(groupState);
 
 	return (
 		<>
 			{levels.map((level, index) => (
 				<TabPanel value={value} index={index} key={index}>
-					<div className={classes.accordion}>
-						{groups.map(
-							({ year_of_study, group_name, group_id }) =>
-								year_of_study === index + 1 && (
-									<Accordion
-										key={group_id}
-										name={group_name}
-										render={() => <StudentTable group={group_id} />}
-									/>
-								)
-						)}
-					</div>
+					<MarksTable />
 				</TabPanel>
 			))}
 		</>
 	);
 }
 
-export default StudentTabChild;
+export default MarksTabChild;
