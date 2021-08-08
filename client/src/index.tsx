@@ -9,12 +9,19 @@ import * as serviceWorker from './serviceWorker';
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 
+//redux perist
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistStore } from 'redux-persist';
+let persistor = persistStore(store);
+
 ReactDOM.render(
 	<React.StrictMode>
 		<Router>
 			<Provider store={store}>
-				<CssBaseline />
-				<App />
+				<PersistGate loading={null} persistor={persistor}>
+					<CssBaseline />
+					<App />
+				</PersistGate>
 			</Provider>
 		</Router>
 	</React.StrictMode>,

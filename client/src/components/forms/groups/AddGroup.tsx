@@ -1,16 +1,18 @@
-import React from 'react';
-import {
-	Avatar,
-	Button,
-	TextField,
-	Typography,
-	Container,
-	MenuItem,
-	Grid,
-} from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { Avatar, Button, Typography, Container, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import StudentsIcon from '@material-ui/icons/SchoolOutlined';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import Input from './Input';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import {
+	addGroup,
+	clearError,
+	groupState,
+} from '../../../features/groups/groupsSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { toast } from 'react-toastify';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -32,50 +34,114 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-type FormData = {
-	groupName: string;
-	numberOfGroupMembers: number;
-	member: number;
-	leader: string;
-	two: string;
-	three: string;
-	four: string;
-	five: string;
-	six: string;
+export type FormData = {
+	group_name: string;
+	group_leader: string;
+	member_1: string;
+	member_2: string;
+	member_3: string;
+	member_4: string;
 };
+
+const schema = yup.object().shape({
+	group_name: yup.string().trim().min(2).max(50).required(),
+	group_leader: yup
+		.string()
+		.trim()
+		.uppercase()
+		.required()
+		.uppercase()
+		.matches(
+			/^ITE[0-9]{3}-[0-9]{4}-[0-9]{4}$/i,
+			'please use a valid registration number'
+		),
+	member_1: yup
+		.string()
+		.trim()
+		.uppercase()
+		.required()
+		.uppercase()
+		.matches(
+			/^ITE[0-9]{3}-[0-9]{4}-[0-9]{4}$/i,
+			'please use a valid registration number'
+		),
+	member_2: yup
+		.string()
+		.trim()
+		.uppercase()
+		.required()
+		.uppercase()
+		.matches(
+			/^ITE[0-9]{3}-[0-9]{4}-[0-9]{4}$/i,
+			'please use a valid registration number'
+		),
+	member_3: yup
+		.string()
+		.trim()
+		.uppercase()
+		.required()
+		.uppercase()
+		.matches(
+			/^ITE[0-9]{3}-[0-9]{4}-[0-9]{4}$/i,
+			'please use a registration number'
+		),
+	member_4: yup
+		.string()
+		.trim()
+		.uppercase()
+		.required()
+		.uppercase()
+		.matches(
+			/^ITE[0-9]{3}-[0-9]{4}-[0-9]{4}$/i,
+			'please use a valid registration number'
+		),
+});
 
 export default function AddGroup() {
 	const classes = useStyles();
-	const { control, handleSubmit } = useForm<FormData>();
-	const numberOfGroupMembers = useWatch({
-		control,
-		name: 'numberOfGroupMembers',
-		defaultValue: 5,
+	const { control, handleSubmit } = useForm<FormData>({
+		resolver: yupResolver(schema),
 	});
-	const member: number = useWatch({
-		control,
-		name: 'member',
-		defaultValue: 1,
-	});
+	const { error } = useAppSelector(groupState);
+	const dispatch = useAppDispatch();
 
-	const handleStudents = () => {
-		switch (member) {
-			case 1:
-				return 'leader';
-			case 2:
-				return 'two';
-			case 3:
-				return 'three';
-			case 4:
-				return 'four';
-			case 5:
-				return 'five';
-			default:
-				return 'six';
+	useEffect(() => {
+		if (error.status) {
+			console.log(error);
+			toast.error(error.message);
+			dispatch(clearError());
 		}
-	};
+	}, [error, dispatch]);
 
-	const onSubmit = handleSubmit((data) => console.log(data));
+	// const numberOfGroupMembers = useWatch({
+	// 	control,
+	// 	name: 'numberOfGroupMembers',
+	// 	defaultValue: 5,
+	// });
+	// const member: number = useWatch({
+	// 	control,
+	// 	name: 'member',
+	// 	defaultValue: 1,
+	// });
+
+	// const handleStudents = () => {
+	// 	switch (member) {
+	// 		case 1:
+	// 			return 'leader';
+	// 		case 2:
+	// 			return 'two';
+	// 		case 3:
+	// 			return 'three';
+	// 		case 4:
+	// 			return 'four';
+	// 		case 5:
+	// 			return 'five';
+	// 		default:
+	// 			return 'six';
+	// 	}
+	// };
+
+	const onSubmit = handleSubmit((data) => dispatch(addGroup(data)));
 
 	return (
 		<Container maxWidth="xs">
@@ -89,7 +155,7 @@ export default function AddGroup() {
 				<form onSubmit={onSubmit} className={classes.form} noValidate>
 					<Grid container spacing={2}>
 						<Grid item xs={12}>
-							<Controller
+							{/* <Controller
 								name="groupName"
 								control={control}
 								render={({ field }) => (
@@ -104,34 +170,30 @@ export default function AddGroup() {
 										helperText="Please type in a unique group name"
 									/>
 								)}
-							/>
+							/> */}
+							<Input name="group_name" control={control} />
 						</Grid>
 						<Grid item xs={12}>
-							<Controller
-								name="numberOfGroupMembers"
+							{/* <Controller
+								name="groupName"
 								control={control}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										id="numberOfGroupMembers"
-										select
-										label="Number of group members"
-										helperText="Please select the number of group members"
 										variant="outlined"
 										required
 										fullWidth
-										defaultValue={6}
-									>
-										{[4, 5, 6].map((value) => (
-											<MenuItem key={value} value={value}>
-												{value}
-											</MenuItem>
-										))}
-									</TextField>
+										label="Group Name"
+										id="groupName"
+										autoFocus
+										helperText="Please type in a unique group name"
+									/>
 								)}
-							/>
+							/> */}
+							<Input name="group_leader" control={control} />
 						</Grid>
-						<Grid item xs={12} sm={4}>
+
+						{/* <Grid item xs={12} sm={6}>
 							<Controller
 								name="member"
 								control={control}
@@ -156,9 +218,9 @@ export default function AddGroup() {
 									</TextField>
 								)}
 							/>
-						</Grid>
-						<Grid item xs={12} sm={8}>
-							<Controller
+						</Grid> */}
+						<Grid item xs={12} sm={6}>
+							{/* <Controller
 								name={handleStudents()}
 								control={control}
 								defaultValue="hg"
@@ -173,7 +235,65 @@ export default function AddGroup() {
 										helperText="type in registration number of member"
 									/>
 								)}
-							/>
+							/> */}
+							<Input name="member_1" control={control} />
+						</Grid>
+						<Grid item xs={12} sm={6}>
+							<Input name="member_2" control={control} />
+							{/* <Controller
+								name={handleStudents()}
+								control={control}
+								defaultValue="hg"
+								render={({ field }) => (
+									<TextField
+										{...field}
+										variant="outlined"
+										required
+										label={handleStudents()}
+										id={handleStudents()}
+										fullWidth
+										helperText="type in registration number of member"
+									/>
+								)}
+							/> */}
+						</Grid>
+						<Grid item xs={12} sm={6}>
+							{/* <Controller
+								name={handleStudents()}
+								control={control}
+								defaultValue="hg"
+								render={({ field }) => (
+									<TextField
+										{...field}
+										variant="outlined"
+										required
+										label={handleStudents()}
+										id={handleStudents()}
+										fullWidth
+										helperText="type in registration number of member"
+									/>
+								)}
+							/> */}
+							<Input name="member_3" control={control} />
+						</Grid>
+						<Grid item xs={12} sm={6}>
+							{/* <Controller
+								name={handleStudents()}
+								control={control}
+								defaultValue="hg"
+								render={({ field }) => (
+									<TextField
+										{...field}
+										variant="outlined"
+										required
+										label={handleStudents()}
+										id={handleStudents()}
+										fullWidth
+										helperText="type in registration number of member"
+									/>
+								)}
+							/> */}
+							<Input name="member_4" control={control} />
 						</Grid>
 					</Grid>
 					<Button

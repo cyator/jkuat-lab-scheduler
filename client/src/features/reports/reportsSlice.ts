@@ -11,28 +11,34 @@ export interface PracticalState {
 	error: Error;
 }
 
-interface Report {
+export interface Report {
+	report_id: number | null;
 	unit_code: string;
-	lec_id: string;
+	group_name: string;
 	prac_name: string;
-	report: string;
+	report_name: string;
+	marks: number | null;
 }
 
 const initialState: PracticalState = {
 	markedReports: [
 		{
+			report_id: null,
 			unit_code: '',
-			lec_id: '',
+			group_name: '',
 			prac_name: '',
-			report: '',
+			report_name: '',
+			marks: null,
 		},
 	],
 	pendingReports: [
 		{
+			report_id: null,
 			unit_code: '',
-			lec_id: '',
+			group_name: '',
 			prac_name: '',
-			report: '',
+			report_name: '',
+			marks: null,
 		},
 	],
 	status: 'idle',
@@ -44,9 +50,10 @@ const initialState: PracticalState = {
 
 export const fetchMarkedReports = createAsyncThunk(
 	'reports/fetchMarkedReports',
-	async (value, thunkAPI) => {
+	async (value, { getState, rejectWithValue }) => {
 		try {
-			const response = await fetch('/reports/marked', {
+			const { auth } = getState() as RootState;
+			const response = await fetch(`/reports/marked/${auth.user.id}`, {
 				headers: {
 					'Content-Type': 'application/json',
 					...authHeader(),
@@ -56,20 +63,21 @@ export const fetchMarkedReports = createAsyncThunk(
 			if (response.status === 200) {
 				return data;
 			} else {
-				return thunkAPI.rejectWithValue(data);
+				return rejectWithValue(data);
 			}
 		} catch (error) {
 			console.log(error.response.data);
-			thunkAPI.rejectWithValue(error.response.data);
+			rejectWithValue(error.response.data);
 		}
 	}
 );
 
 export const fetchPendingReports = createAsyncThunk(
 	'reports/fetchPendingReports',
-	async (value, thunkAPI) => {
+	async (value, { getState, rejectWithValue }) => {
 		try {
-			const response = await fetch('/reports/pending', {
+			const { auth } = getState() as RootState;
+			const response = await fetch(`/reports/pending/${auth.user.id}`, {
 				headers: {
 					'Content-Type': 'application/json',
 					...authHeader(),
@@ -79,11 +87,11 @@ export const fetchPendingReports = createAsyncThunk(
 			if (response.status === 200) {
 				return data;
 			} else {
-				return thunkAPI.rejectWithValue(data);
+				return rejectWithValue(data);
 			}
 		} catch (error) {
 			console.log(error.response.data);
-			thunkAPI.rejectWithValue(error.response.data);
+			rejectWithValue(error.response.data);
 		}
 	}
 );
@@ -133,6 +141,73 @@ export const addReport = createAsyncThunk(
 	}
 );
 
+export const addMarks = createAsyncThunk(
+	'reports/addMarks',
+	async (
+		{
+			marks,
+			report_id,
+		}: {
+			marks: number;
+			report_id: number | null;
+		},
+		{ rejectWithValue }
+	) => {
+		try {
+			const response = await fetch('/reports/addMarks', {
+				method: 'POST',
+				body: JSON.stringify({
+					marks,
+					report_id,
+				}),
+				headers: {
+					'Content-type': 'application/json; charset=UTF-8',
+					...authHeader(),
+				},
+			});
+			const data = await response.json();
+			if (response.status === 200) {
+				toast.success('mark added successfully');
+				return data[0];
+			} else {
+				return rejectWithValue(data);
+			}
+		} catch (error) {
+			console.log(error.response.data);
+			rejectWithValue(error.response.data);
+		}
+	}
+);
+
+export const downloadReport = createAsyncThunk(
+	'reports/downloadReport',
+	async (file: string, { rejectWithValue }) => {
+		try {
+			const response = await fetch(`/uploads/download/${file}`, {
+				headers: {
+					...authHeader(),
+				},
+			});
+			const data = await response.blob();
+			let url = await window.URL.createObjectURL(data);
+			let a = document.createElement('a');
+			if (response.status === 200) {
+				a.href = url;
+				a.download = url.substring(url.lastIndexOf('/') + 1);
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				return;
+			} else {
+				return rejectWithValue(data);
+			}
+		} catch (error) {
+			console.log(error.response.data);
+			rejectWithValue(error.response.data);
+		}
+	}
+);
+
 export const reportsSlice = createSlice({
 	name: 'reports',
 	initialState,
@@ -156,10 +231,12 @@ export const reportsSlice = createSlice({
 				state.status = 'success';
 				state.markedReports = action.payload ?? [
 					{
+						report_id: null,
 						unit_code: '',
-						lec_id: '',
+						group_name: '',
 						prac_name: '',
-						report: '',
+						report_name: '',
+						marks: null,
 					},
 				];
 				state.error = {
@@ -178,10 +255,12 @@ export const reportsSlice = createSlice({
 				state.status = 'success';
 				state.pendingReports = action.payload ?? [
 					{
+						report_id: null,
 						unit_code: '',
-						lec_id: '',
+						group_name: '',
 						prac_name: '',
-						report: '',
+						report_name: '',
+						marks: null,
 					},
 				];
 				state.error = {
@@ -206,11 +285,45 @@ export const reportsSlice = createSlice({
 			.addCase(addReport.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload;
+			})
+			.addCase(addMarks.pending, (state) => {
+				state.status = 'loading';
+			})
+			.addCase(addMarks.fulfilled, (state) => {
+				state.status = 'success';
+				state.error = {
+					status: null,
+					message: '',
+				};
+			})
+			.addCase(addMarks.rejected, (state, action: any) => {
+				state.status = 'failed';
+				state.error = action?.payload ?? {
+					status: null,
+					message: '',
+				};
+			})
+			.addCase(downloadReport.pending, (state) => {
+				state.status = 'loading';
+			})
+			.addCase(downloadReport.fulfilled, (state) => {
+				state.status = 'success';
+				state.error = {
+					status: null,
+					message: '',
+				};
+			})
+			.addCase(downloadReport.rejected, (state, action: any) => {
+				state.status = 'failed';
+				state.error = action?.payload ?? {
+					status: null,
+					message: '',
+				};
 			});
 	},
 });
 
 export const { clearError, setStatusIdle } = reportsSlice.actions;
-export const practicalState = (state: RootState) => state.reports;
+export const reportsState = (state: RootState) => state.reports;
 
 export default reportsSlice.reducer;

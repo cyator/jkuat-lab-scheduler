@@ -1,4 +1,23 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+import {
+	configureStore,
+	ThunkAction,
+	Action,
+	combineReducers,
+} from '@reduxjs/toolkit';
+import {
+	persistStore,
+	persistReducer,
+	FLUSH,
+	REHYDRATE,
+	PAUSE,
+	PERSIST,
+	PURGE,
+	REGISTER,
+} from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import { PersistGate } from 'redux-persist/integration/react';
+
+//reducers
 import drawerReducer from '../features/drawer/drawerSlice';
 import tabsReducer from '../features/tabs/tabsSlice';
 import groupsReducer from '../features/groups/groupsSlice';
@@ -12,22 +31,55 @@ import practicalsReducer from '../features/practicals/practicalSlice';
 import componentsReducer from '../features/equipment/componentsSlice';
 import reportsReducer from '../features/reports/reportsSlice';
 
-export const store = configureStore({
-	reducer: {
-		drawer: drawerReducer,
-		tabs: tabsReducer,
-		groups: groupsReducer,
-		students: studentReducer,
-		units: unitsReducer,
-		modal: modalReducer,
-		auth: authReducer,
-		equipments: equipmentReducer,
-		profile: profileReducer,
-		practicals: practicalsReducer,
-		components: componentsReducer,
-		reports: reportsReducer,
-	},
+//combine reducers
+const reducers = combineReducers({
+	drawer: drawerReducer,
+	tabs: tabsReducer,
+	groups: groupsReducer,
+	students: studentReducer,
+	units: unitsReducer,
+	modal: modalReducer,
+	auth: authReducer,
+	equipments: equipmentReducer,
+	profile: profileReducer,
+	practicals: practicalsReducer,
+	components: componentsReducer,
+	reports: reportsReducer,
 });
+
+const persistConfig = {
+	key: 'root',
+	version: 1,
+	storage,
+};
+const persistedReducer = persistReducer(persistConfig, reducers);
+
+export const store = configureStore({
+	reducer: persistedReducer,
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware({
+			serializableCheck: {
+				ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+			},
+		}),
+});
+
+// export const store = configureStore({
+// 	reducer: {
+// 		drawer: drawerReducer,
+// 		tabs: tabsReducer,
+// 		groups: groupsReducer,
+// 		students: studentReducer,
+// 		units: unitsReducer,
+// 		modal: modalReducer,
+// 		auth: authReducer,
+// 		equipments: equipmentReducer,
+// 		profile: profileReducer,
+// 		practicals: practicalsReducer,
+// 		components: componentsReducer,
+// 		reports: reportsReducer,
+// 	},
+// });
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

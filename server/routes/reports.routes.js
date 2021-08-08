@@ -10,17 +10,20 @@ const {
 	addReport,
 	editReport,
 	deleteReport,
+	addMarks,
 } = require('../controller/reports.controller');
 
 const upload = require('../middleware/multer');
 //lec
 router.get('/', verifyToken('lecturer'), getALLReports);
 //lec
-router.get('/marked', verifyToken('lecturer'), getMarkedReports);
+router.get('/marked/:lec_id', verifyToken('lecturer'), getMarkedReports);
 //lec
-router.get('/pending', verifyToken('lecturer'), getPendingReports);
+router.get('/pending/:lec_id', verifyToken('lecturer'), getPendingReports);
 //lec
 router.get('/:id', verifyToken('lecturer'), getReportByID);
+//lec
+router.post('/addMarks', verifyToken('lecturer'), addMarks);
 //group leader
 router.post('/', verifyToken('groupLeader'), upload.single('file'), addReport);
 //lec

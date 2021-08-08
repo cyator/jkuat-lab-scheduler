@@ -8,7 +8,7 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { useAppDispatch } from '../app/hooks';
 import { setIsOpen, setFile } from '../features/modal/modalSlice';
-import authHeader from '../features/auth/authHeader';
+import { downloadLabManual } from '../features/practicals/practicalSlice';
 
 const useStyles = makeStyles({
 	root: {
@@ -25,14 +25,6 @@ interface Props {
 export default function PracticalCard({ title, abstract, lab_manual }: Props) {
 	const classes = useStyles();
 	const dispatch = useAppDispatch();
-
-	const handleDownload = (file: string) => {
-		fetch(`uploads/download/${file}`, {
-			headers: {
-				...authHeader(),
-			},
-		});
-	};
 
 	const handleModal = () => {
 		dispatch(setIsOpen(true));
@@ -56,7 +48,7 @@ export default function PracticalCard({ title, abstract, lab_manual }: Props) {
 					<Button
 						size="small"
 						color="primary"
-						onClick={() => handleDownload(lab_manual)}
+						onClick={() => dispatch(downloadLabManual(lab_manual))}
 					>
 						Download
 					</Button>

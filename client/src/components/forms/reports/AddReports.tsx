@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import { Avatar, Button, Typography, Container } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import FileInput from '../reports/FileInput';
 import {
 	practicalState,
 	clearError,
-	setStatusIdle,
 } from '../../../features/practicals/practicalSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { toast } from 'react-toastify';
@@ -71,9 +70,13 @@ interface Props {
 export default function AddPractical({ units, practicals }: Props) {
 	const classes = useStyles();
 	const dispatch = useAppDispatch();
-	const { error, status } = useAppSelector(practicalState);
+	const { error } = useAppSelector(practicalState);
 	const { control, handleSubmit } = useForm<FormData>({
 		resolver: yupResolver(schema),
+	});
+	const unitCode = useWatch({
+		control,
+		name: 'unit_code',
 	});
 	const onSubmit: SubmitHandler<FormData> = (data, e) => {
 		dispatch(addReport(data));
@@ -88,13 +91,6 @@ export default function AddPractical({ units, practicals }: Props) {
 			dispatch(clearError());
 		}
 	}, [error, dispatch]);
-
-	useEffect(() => {
-		if (status === 'success') {
-			toast.success('Added successfully');
-			dispatch(setStatusIdle());
-		}
-	}, [status, dispatch]);
 
 	return (
 		<Container maxWidth="xs">
@@ -117,7 +113,6 @@ export default function AddPractical({ units, practicals }: Props) {
 							<TextField
 								{...rest}
 								select
-								autoFocus
 								innerRef={ref}
 								variant="outlined"
 								margin="normal"
@@ -159,11 +154,13 @@ export default function AddPractical({ units, practicals }: Props) {
 									`please select the prac name for your report`
 								}
 							>
-								{practicals.map(({ prac_id, prac_name }) => (
-									<MenuItem key={prac_id} value={prac_name}>
-										{prac_name}
-									</MenuItem>
-								))}
+								{practicals
+									.filter(({ unit_code }) => unit_code === unitCode)
+									.map(({ prac_id, prac_name }) => (
+										<MenuItem key={prac_id} value={prac_name}>
+											{prac_name}
+										</MenuItem>
+									))}
 							</TextField>
 						)}
 					/>

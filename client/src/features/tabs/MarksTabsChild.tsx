@@ -1,31 +1,33 @@
-import React from 'react';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
-
-import { useAppSelector } from '../../app/hooks';
+import React, { useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { tabValue } from './tabsSlice';
-import { groupState } from '../groups/groupsSlice';
-import { levels } from './StudentTabs';
+import {
+	fetchMarkedReports,
+	fetchPendingReports,
+	reportsState,
+} from '../reports/reportsSlice';
+import { levels } from './MarksTabs';
 import TabPanel from '../../components/TabPanel';
-import StudentTable from '../../components/StudentTable';
-import Accordion from '../../components/Accordion';
 import MarksTable from '../../components/MarksTable';
-
-const useStyles = makeStyles((theme: Theme) =>
-	createStyles({
-		accordion: {
-			width: '100%',
-		},
-	})
-);
 
 function MarksTabChild() {
 	const value = useAppSelector(tabValue);
+	const { pendingReports, markedReports } = useAppSelector(reportsState);
+	const dispatch = useAppDispatch();
+
+	useEffect(() => {
+		dispatch(fetchPendingReports());
+	}, [dispatch]);
+
+	useEffect(() => {
+		dispatch(fetchMarkedReports());
+	}, [dispatch]);
 
 	return (
 		<>
 			{levels.map((level, index) => (
 				<TabPanel value={value} index={index} key={index}>
-					<MarksTable />
+					<MarksTable rows={index === 0 ? pendingReports : markedReports} />
 				</TabPanel>
 			))}
 		</>

@@ -26,7 +26,7 @@ export default function InsetList() {
 				<Box p={1}>
 					<Paper>
 						<ListItem>
-							<ListItemText primary="Chelsea Otakan" />
+							<ListItemText primary={`Activity ${value + 1} `} />
 						</ListItem>
 					</Paper>
 				</Box>

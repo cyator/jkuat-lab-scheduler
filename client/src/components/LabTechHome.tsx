@@ -28,7 +28,6 @@ function LabTechHome({ name }: Props) {
 			<Paper className={classes.paper}>
 				<Box p={3}>
 					<Typography variant="h6">Your Activities</Typography>
-
 					<HomeList />
 				</Box>
 			</Paper>

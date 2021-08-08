@@ -18,7 +18,7 @@ module.exports = {
 		try {
 			const { lec_id } = req.params;
 			const { rows } = await pool.query(
-				'SELECT * FROM marked_reports WHERE lec_id = $1',
+				'SELECT * FROM report_view WHERE (marks IS NOT NULL AND lec_id = $1)',
 				[lec_id]
 			);
 			if (rows.length === 0) {
@@ -34,7 +34,7 @@ module.exports = {
 		try {
 			const { lec_id } = req.params;
 			const { rows } = await pool.query(
-				'SELECT * FROM pending_reports WHERE lec_id = $1',
+				'SELECT * FROM report_view WHERE (marks IS NULL AND lec_id = $1)',
 				[lec_id]
 			);
 			if (rows.length === 0) {
@@ -59,6 +59,34 @@ module.exports = {
 			res.json(rows);
 		} catch (error) {
 			console.log(error.message);
+			next(error);
+		}
+	},
+	addMarks: async (req, res, next) => {
+		try {
+			const { marks, report_id } = req.body;
+			if (!marks || !report_id) {
+				throw createError.BadRequest();
+			}
+
+			const groups = await pool.query(
+				`SELECT * FROM reports WHERE report_id = $1`,
+				[report_id]
+			);
+			if (groups.rows.length === 0) {
+				throw createError.BadRequest('report not found');
+			}
+
+			const { rows } = await pool.query(
+				`UPDATE reports SET marks = $1 WHERE report_id = $2  RETURNING *`,
+				[marks, report_id]
+			);
+			res.json(rows);
+		} catch (error) {
+			console.log(error.message);
+			if (error.code === '23505') {
+				return next(createError(400, error.detail));
+			}
 			next(error);
 		}
 	},

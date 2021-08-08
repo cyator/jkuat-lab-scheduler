@@ -133,6 +133,35 @@ export const addPractical = createAsyncThunk(
 	}
 );
 
+export const downloadLabManual = createAsyncThunk(
+	'practicals/downloadLabManual',
+	async (file: string, { rejectWithValue }) => {
+		try {
+			const response = await fetch(`/uploads/download/${file}`, {
+				headers: {
+					...authHeader(),
+				},
+			});
+			const data = await response.blob();
+			let url = await window.URL.createObjectURL(data);
+			let a = document.createElement('a');
+			if (response.status === 200) {
+				a.href = url;
+				a.download = url.substring(url.lastIndexOf('/') + 1);
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				return;
+			} else {
+				return rejectWithValue(data);
+			}
+		} catch (error) {
+			console.log(error.response.data);
+			rejectWithValue(error.response.data);
+		}
+	}
+);
+
 export const practicalSlice = createSlice({
 	name: 'practicals',
 	initialState,
@@ -208,6 +237,20 @@ export const practicalSlice = createSlice({
 				};
 			})
 			.addCase(addPractical.rejected, (state, action: any) => {
+				state.status = 'failed';
+				state.error = action?.payload;
+			})
+			.addCase(downloadLabManual.pending, (state) => {
+				state.status = 'loading';
+			})
+			.addCase(downloadLabManual.fulfilled, (state) => {
+				state.status = 'success';
+				state.error = {
+					status: null,
+					message: '',
+				};
+			})
+			.addCase(downloadLabManual.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload;
 			});

@@ -12,7 +12,6 @@ import {
 	addPractical,
 	practicalState,
 	clearError,
-	setStatusIdle,
 } from '../../../features/practicals/practicalSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { authState } from '../../../features/auth/authSlice';
