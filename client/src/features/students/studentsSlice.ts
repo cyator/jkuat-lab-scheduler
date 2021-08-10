@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { Error } from '../auth/authSlice';
 import authHeader from '../auth/authHeader';
@@ -73,6 +73,9 @@ export const studentsSlice = createSlice({
 	name: 'students',
 	initialState,
 	reducers: {
+		setStudents: (state, { payload }: PayloadAction<Student[]>) => {
+			state.students = payload;
+		},
 		clearError: (state) => {
 			state.error = {
 				status: null,
@@ -108,7 +111,7 @@ export const studentsSlice = createSlice({
 	},
 });
 
-export const { clearError } = studentsSlice.actions;
+export const { clearError, setStudents } = studentsSlice.actions;
 export const studentState = (state: RootState) => state.students;
 
 export default studentsSlice.reducer;

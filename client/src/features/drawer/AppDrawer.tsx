@@ -85,7 +85,7 @@ export default function AppDrawer() {
 	const history = useHistory();
 
 	const itemList =
-		user.role === 'lecturer'
+		user.role === 'lecturer' || user.role === 'cod'
 			? [
 					{
 						text: 'Home',

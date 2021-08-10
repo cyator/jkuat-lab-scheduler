@@ -13,32 +13,49 @@ module.exports = {
 	},
 	getGroupByID: async (req, res, next) => {
 		try {
-			res.json('getting student by id');
+			const { id } = req.params;
+			const { rows } = await pool.query(
+				'SELECT * FROM lab_groups WHERE group_id = $1',
+				[id]
+			);
+			if (rows.length === 0) {
+				throw createError(404, 'group not found');
+			}
+			res.json(rows);
 		} catch (error) {
 			console.log(error.message);
 			next(error);
 		}
 	},
-	addGroup: async (req, res, next) => {
+	getStudentsWithoutGroupsByID: async (req, res, next) => {
 		try {
-			const {
-				class_rep,
-				group_name,
-				group_leader,
-				member_1,
-				member_2,
-				member_3,
-				member_4,
-			} = req.body;
-			if (
-				!class_rep ||
-				!group_name ||
-				!group_leader ||
-				!member_1 ||
-				!member_2 ||
-				!member_3 ||
-				member_4
-			) {
+			const students = await pool.query(
+				'SELECT year_of_study FROM student_view WHERE reg_no = $1',
+				[req.payload.aud]
+			);
+			if (students.rows.length === 0) {
+				throw createError(404, 'student not found');
+			}
+			const year_of_study = students.rows[0].year_of_study;
+			console.log(year_of_study);
+			const { rows } = await pool.query(
+				'SELECT * FROM students_without_groups WHERE year_of_study = $1',
+				[year_of_study]
+			);
+			// if (rows.length === 0) {
+			// 	throw createError(404, 'no students found');
+			// }
+			res.json(rows);
+		} catch (error) {
+			console.log(error);
+			next(error);
+		}
+	},
+
+	createGroup: async (req, res, next) => {
+		try {
+			const { group_name } = req.body;
+			if (!group_name) {
 				throw createError.BadRequest();
 			}
 
@@ -49,56 +66,92 @@ module.exports = {
 			if (group_names.rows.length > 0) {
 				throw createError.BadRequest('group name already exists');
 			}
-
 			const students = await pool.query(
 				'SELECT year_of_study FROM student_view WHERE reg_no = $1',
-				[class_rep]
+				[req.payload.aud]
 			);
 			const year_of_study = students.rows[0].year_of_study;
 			const group_ids = await pool.query(
 				`SELECT group_id FROM lab_groups WHERE year_of_study = $1`,
 				[students.rows[0].year_of_study]
 			);
+			console.log(group_ids.rows);
+			const group_id =
+				Math.max.apply(
+					Math,
+					group_ids.rows.map(function (row) {
+						return row.group_id;
+					})
+				) + 1;
 
-			const group_id = Math.max(...group_ids.rows) + 1;
-
-			const groups = await pool.query(
-				`INSERT INTO lab_groups(group_id,group_name,year_of_study) VALUES ($1,$2,$3)`,
+			const { rows } = await pool.query(
+				`INSERT INTO lab_groups(group_id,group_name,year_of_study) VALUES ($1,$2,$3) RETURNING *`,
 				[group_id, group_name, year_of_study]
 			);
+			res.json(rows);
+		} catch (error) {
+			console.log(error.message);
+			if (error.code === '23505') {
+				return next(createError(400, error.detail));
+			}
+			next(error);
+		}
+	},
+	addMember: async (req, res, next) => {
+		try {
+			const { reg_no, group_id } = req.body;
+			if (!reg_no || !group_id) {
+				throw createError.BadRequest();
+			}
 
-			const one = await pool.query(
-				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
-				[group_id, member_1]
+			const students = await pool.query(
+				`SELECT * FROM student_view WHERE reg_no = $1`,
+				[reg_no]
 			);
-			const two = await pool.query(
-				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
-				[group_id, member_2]
+			if (students.rows.length === 0) {
+				throw createError.NotFound('student not found');
+			}
+			const group_check = await pool.query(
+				`SELECT * FROM student_view WHERE reg_no = $1 AND group_id IS NULL `,
+				[reg_no]
 			);
-			const three = await pool.query(
-				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
-				[group_id, member_3]
-			);
-			const four = await pool.query(
-				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
-				[group_id, member_4]
-			);
-			const leader = await pool.query(
-				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
-				[group_id, group_leader]
-			);
+			if (group_check.rows.length === 0) {
+				throw createError.NotFound('student is already assigned to a group');
+			}
+
 			const { rows } = await pool.query(
-				`INSERT INTO group_leader(reg_no) VALUES ($1) RETURNING *`,
-				[leader]
+				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
+				[group_id, reg_no]
 			);
-			res.json({
-				group_name: groups.rows[0].group_name,
-				group_leader: leader.rows[0].reg_no,
-				member_1: one.rows[0].reg_no,
-				member_2: two.rows[0].reg_no,
-				member_3: three.rows[0].reg_no,
-				member_4: four.rows[0].reg_no,
-			});
+
+			res.json(rows);
+		} catch (error) {
+			console.log(error.message);
+			if (error.code === '23505') {
+				return next(createError(400, error.detail));
+			}
+			next(error);
+		}
+	},
+	removeMember: async (req, res, next) => {
+		try {
+			console.log('remove member', req.body);
+			const { reg_no, group_id } = req.body;
+			if (!reg_no || !group_id) {
+				throw createError.BadRequest();
+			}
+			const students = await pool.query(
+				`SELECT * FROM student_view WHERE reg_no = $1`,
+				[reg_no]
+			);
+			if (students.rows.length === 0) {
+				throw createError.NotFound('student not found');
+			}
+			const { rows } = await pool.query(
+				`UPDATE students SET group_id = $1 WHERE reg_no = $2 RETURNING *`,
+				[null, reg_no]
+			);
+			res.json(rows);
 		} catch (error) {
 			console.log(error.message);
 			if (error.code === '23505') {

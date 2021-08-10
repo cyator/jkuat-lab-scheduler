@@ -23,6 +23,7 @@ import {
 	clearError as clearProfileError,
 	StudentProfile,
 } from '../features/profile/profileSlice';
+import { setValue } from '../features/tabs/tabsSlice';
 
 function Students() {
 	const { error } = useAppSelector(groupState);
@@ -69,10 +70,18 @@ function Students() {
 		}
 	}, [profileError, dispatch]);
 
+	useEffect(() => {
+		if (year_of_study) {
+			dispatch(setValue(year_of_study - 1));
+		}
+	}, [dispatch, year_of_study]);
+
 	return (
 		<div>
 			<StudentTabs
-				lock={year_of_study ? year_of_study : undefined}
+				lock={
+					user.role === 'classrep' && year_of_study ? year_of_study : undefined
+				}
 				render={() => <StudentsTabChild />}
 			/>
 			{user.role === 'classrep' && (

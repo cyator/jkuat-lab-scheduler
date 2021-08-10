@@ -14,6 +14,10 @@ const useStyles = makeStyles({
 	root: {
 		maxWidth: 345,
 	},
+	content: {
+		height: 200,
+		overflow: 'auto',
+	},
 });
 
 interface Props {
@@ -35,7 +39,7 @@ export default function PracticalCard({ title, abstract, lab_manual }: Props) {
 		<>
 			<Card className={classes.root}>
 				<CardActionArea onClick={handleModal}>
-					<CardContent>
+					<CardContent className={classes.content}>
 						<Typography gutterBottom variant="h5" component="h2">
 							{title}
 						</Typography>

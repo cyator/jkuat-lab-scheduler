@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { Error } from '../auth/authSlice';
 import authHeader from '../auth/authHeader';
@@ -151,7 +151,7 @@ export const addMarks = createAsyncThunk(
 			marks: number;
 			report_id: number | null;
 		},
-		{ rejectWithValue }
+		{ rejectWithValue, dispatch, getState }
 	) => {
 		try {
 			const response = await fetch('/reports/addMarks', {
@@ -212,6 +212,12 @@ export const reportsSlice = createSlice({
 	name: 'reports',
 	initialState,
 	reducers: {
+		setMarkedReports: (state, { payload }: PayloadAction<Report[]>) => {
+			state.markedReports = payload;
+		},
+		setPendingReports: (state, { payload }: PayloadAction<Report[]>) => {
+			state.pendingReports = payload;
+		},
 		clearError: (state) => {
 			state.error = {
 				status: null,
@@ -289,13 +295,20 @@ export const reportsSlice = createSlice({
 			.addCase(addMarks.pending, (state) => {
 				state.status = 'loading';
 			})
-			.addCase(addMarks.fulfilled, (state) => {
-				state.status = 'success';
-				state.error = {
-					status: null,
-					message: '',
-				};
-			})
+			.addCase(
+				addMarks.fulfilled,
+				(state, { payload }: PayloadAction<Report>) => {
+					state.status = 'success';
+					state.markedReports = state.markedReports.filter(
+						(report) => report.report_id !== payload.report_id
+					);
+					state.pendingReports = [...state.pendingReports, payload];
+					state.error = {
+						status: null,
+						message: '',
+					};
+				}
+			)
 			.addCase(addMarks.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload ?? {
@@ -323,7 +336,12 @@ export const reportsSlice = createSlice({
 	},
 });
 
-export const { clearError, setStatusIdle } = reportsSlice.actions;
+export const {
+	clearError,
+	setStatusIdle,
+	setMarkedReports,
+	setPendingReports,
+} = reportsSlice.actions;
 export const reportsState = (state: RootState) => state.reports;
 
 export default reportsSlice.reducer;
