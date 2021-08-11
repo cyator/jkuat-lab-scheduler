@@ -165,9 +165,10 @@ export const addMarks = createAsyncThunk(
 					...authHeader(),
 				},
 			});
-			const data = await response.json();
+			const data = (await response.json()) as Report[];
 			if (response.status === 200) {
 				toast.success('mark added successfully');
+				dispatch(fetchMarkedReports());
 				return data[0];
 			} else {
 				return rejectWithValue(data);
@@ -295,20 +296,18 @@ export const reportsSlice = createSlice({
 			.addCase(addMarks.pending, (state) => {
 				state.status = 'loading';
 			})
-			.addCase(
-				addMarks.fulfilled,
-				(state, { payload }: PayloadAction<Report>) => {
-					state.status = 'success';
-					state.markedReports = state.markedReports.filter(
-						(report) => report.report_id !== payload.report_id
-					);
-					state.pendingReports = [...state.pendingReports, payload];
-					state.error = {
-						status: null,
-						message: '',
-					};
-				}
-			)
+			.addCase(addMarks.fulfilled, (state, { payload }) => {
+				state.status = 'success';
+
+				const filtered = state.pendingReports.filter(
+					(report) => report.report_id !== payload?.report_id
+				);
+				state.pendingReports = filtered;
+				state.error = {
+					status: null,
+					message: '',
+				};
+			})
 			.addCase(addMarks.rejected, (state, action: any) => {
 				state.status = 'failed';
 				state.error = action?.payload ?? {

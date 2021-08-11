@@ -45,13 +45,22 @@ const reducers = combineReducers({
 	reports: reportsReducer,
 });
 
+const rootReducer = (state: any, action: any) => {
+	if (action.type === 'auth/logout') {
+		storage.removeItem('persist:root');
+		state = {} as RootState;
+	}
+	return reducers(state, action);
+};
+
 const persistConfig = {
 	key: 'root',
 	version: 1,
 	storage,
+	blacklist: ['reports'],
 };
 
-const persistedReducer = persistReducer(persistConfig, reducers);
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
 	reducer: persistedReducer,

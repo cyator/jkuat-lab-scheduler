@@ -23,7 +23,7 @@ function LabTechHome({ name }: Props) {
 		<div>
 			<Box px={3} py={5}>
 				<Typography variant="h4">{`Welcome Back, ${name}!`}</Typography>
-				<Typography variant="subtitle1">You have 3 practicals today</Typography>
+				<Typography variant="subtitle1">Lorem ipsum dolor sit amet.</Typography>
 			</Box>
 			<Paper className={classes.paper}>
 				<Box p={3}>
